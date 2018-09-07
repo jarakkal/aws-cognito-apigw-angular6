@@ -7,6 +7,7 @@
 
 # dependencies
 /node_modules
+/apiGateway-js-sdk
 
 # IDEs and editors
 /.idea

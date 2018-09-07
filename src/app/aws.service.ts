@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Http, Headers, Response} from '@angular/http';
+import { Http, Headers, Response } from '@angular/http';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
@@ -30,12 +30,12 @@ export class AwsService {
 
   googleId:string = '*******.apps.googleusercontent.com';
   poolData = {
-        UserPoolId : '*****', //CognitoUserPool
-        ClientId : '******', //CognitoUserPoolClient
+        UserPoolId : '*******', //CognitoUserPool
+        ClientId : '**************', //CognitoUserPoolClient
         Paranoia : 7
     };
-  identityPool:string = '*****'; //CognitoIdentityPool
-  apiURL:string = 'https://*****';  //ApiUrl
+  identityPool:string = '********************'; //CognitoIdentityPool
+  apiURL:string = 'https://**************';  //ApiUrl
   region:string = 'ap-southeast-2'; //Region Matching CognitoUserPool region
 
  /*********************************************/
