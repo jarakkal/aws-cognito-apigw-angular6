@@ -1,20 +1,268 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<mat-toolbar color="accent">
+  <table cellspacing="0"><tr>
+    <td><a href="https://aws.amazon.com/cognito/" target="_blank"><img title="Amazon Cognito" src="../../assets/img/cognito.png"></a>
+    <a href="https://aws.amazon.com/api-gateway/" target="_blank"><img title="Amazon API Gateway" src="../../assets/img/apigw.png"></a></td>
+  </tr></table>
+  <span>API AuthN/AuthZ Demo</span>
+  <span><img title="Amazon Web Services" src="../../assets/img/aws.png"></span>
+</mat-toolbar>
 
+<mat-grid-list cols="8" rowHeight="20px" gutterSize="1px">
+  <mat-grid-tile colspan="3" rowspan="1" rowHeight="20px" class="center"><mat-icon>looks_one</mat-icon><span> Login with your IdP Credentials </span></mat-grid-tile>
+  <mat-grid-tile colspan="2" rowspan="1" rowHeight="20px" class="center"><mat-icon>looks_two</mat-icon><span> Retrieve User Info </span></mat-grid-tile>
+  <mat-grid-tile colspan="1" rowspan="1" rowHeight="20px" class="center"><mat-icon>looks_3</mat-icon><span> Test Access </span></mat-grid-tile>
+  <mat-grid-tile colspan="2" rowspan="1" rowHeight="20px" class="center"><mat-icon>looks_4</mat-icon><span> Verify Auth Results </span></mat-grid-tile>
+</mat-grid-list>
+<mat-grid-list cols="8" rowHeight="375px" gutterSize="1px">
+  <mat-grid-tile id="login" colspan="3" rowspan="1" >
+    <div class="container">
+        <mat-card class="card-container">
+          <mat-card-header></mat-card-header>
+          <mat-card-content >
+            <form method="POST">
+              {{disableInput}}
+            <div *ngIf="!disableInput">
+              <mat-form-field class="full-width">
+                <label for="userinput">User Name</label>
+                <input matInput id="userinput" placehoder="User Name" type="text" [(ngModel)]="username" [ngModelOptions]="{standalone: true}">
+              </mat-form-field>
+              <br>
+              <mat-form-field class="full-width">
+                <label for="passinput">Password</label>
+                <input matInput id="passinput" placehoder="Password" type="password" required [(ngModel)]="password" [ngModelOptions]="{standalone: true}">
+              </mat-form-field>
+            </div>
+            <mat-radio-group class="radio-group" [(ngModel)]="chosenProvider" [ngModelOptions]="{standalone: true}">
+              <google-signin value="google" (click)="clearFields($event)"></google-signin>
+              <mat-radio-button class="radio-button" value="cup" (click)="enableFields($event)">Cognito User Pools Standalone (JWT)</mat-radio-button>
+              <mat-radio-button class="radio-button" value="cip" (click)="enableFields($event)">Cognito User Pools with Identity (IAM)</mat-radio-button>
+            </mat-radio-group>
+          </form>
+          </mat-card-content>
+          <mat-card-actions>
+              <button mat-raised-button color="accent" (click)="onLogin($event)" type="submit">
+                Login
+              </button>
+          </mat-card-actions>
+        </mat-card>
+    <br>
+    <div *ngIf="errorMessage!=null; else blank">
+      <div class="error">
+      <mat-chip-list color="warn" disabled>
+        <mat-chip class="error" color="warn" disabled>
+            <strong>{{errorMessage}}</strong>
+        </mat-chip>
+      </mat-chip-list>
+      </div>
+    </div>
+    </div>
+  </mat-grid-tile>
+
+  <mat-grid-tile id="userDetails" colspan="2" rowspan="1">
+    <div *ngIf="provider!=null; else notLoggedIn" class="container">
+        <mat-card class="card-container">
+          <mat-card-header>
+            <div mat-card-avatar class="card-header-image"></div>
+            <mat-card-title>
+              <strong class="card-header-title">Authenticated with {{provider}}</strong>
+            </mat-card-title>
+            <mat-card-subtitle>
+              <small> Powered by Amazon Cognito and Amazon API Gateway</small>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <hr>
+          <mat-card-content>
+            <br>
+            <div *ngIf="googleConfirmed=='confirmed'">
+              <div *ngIf="googleUser==null; else googleUserData">
+              <br>
+              <button mat-raised-button color="warn" (click)="userDataFromGoogle($event)" type="submit">
+                Retrieve User Info
+              </button>
+              </div>
+            </div>
+            <div *ngIf="googleConfirmed==null && user!=null">
+              <div>
+                <mat-chip-list>
+                <mat-chip>
+                  <br>
+                  <br>
+                  <strong>{{user.name}} {{user.surname}}</strong><br>
+                  <small><strong>Email: </strong></small><span>{{user.email}}</span><br>
+                  <small><strong>Id: </strong></small><span><small><font color="blue">{{user.userId}}</font></small></span><br>
+                  <br>
+                  <br>
+                  <br>
+                </mat-chip>
+                </mat-chip-list>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+    </div>
+
+  </mat-grid-tile>
+  <mat-grid-tile id="buttons" colspan="1" rowspan="1" >
+    <div class="container">
+    <mat-card class="card-container">
+          <mat-card-header>
+            <mat-card-title>
+              <strong class="card-header-title">API Resources</strong>
+            </mat-card-title>
+            <mat-card-subtitle>
+              <small> Endpoint Paths</small>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <hr>
+      <mat-card-content>
+        <div *ngIf="provider!=null; else disableTests">
+        <div class="center">
+          <button mat-fab (click)="testGoogle($event)" type="submit">/google</button><br><br>
+          <button mat-fab (click)="testUserPools($event)" type="submit">/cup</button><br><br>
+          <button mat-fab (click)="testIdentityPools($event)" type="submit">/cip</button>
+        </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  </mat-grid-tile>
+
+  <mat-grid-tile id="semaphore" colspan="2" rowspan="1">
+    <div class="container">
+    <mat-card class="card-container">
+        <mat-card-header>
+          <div class="center">
+            <mat-card-title>
+                <span><strong><font color="green">Green: </font> Good!</strong> <i class="material-icons">thumb_up</i></span>
+                <span><strong><font color="red">Red: </font> Bad!</strong> <i class="material-icons">thumb_down</i></span>
+                <br>
+                <br>
+            </mat-card-title>
+            </div>
+        </mat-card-header>
+        <hr>
+        <mat-card-content>
+        <div class="center">
+          <br>
+          <br>
+              <div class="center">
+                <table class="table">
+                  <tr class="card-background">
+                  <td>
+                    <div *ngIf="success; else grayCircle">
+                      <figure class="green-circle"></figure>
+                    </div>
+                  </td>
+                  <td>
+                    <div *ngIf="redError!=null; else grayCircle">
+                      <figure class="red-circle"></figure>
+                    </div>
+                  </td>
+                  </tr>
+                </table>
+                <div *ngIf="redError; else br">
+                <mat-chip-list color="warn" disabled>
+                  <mat-chip class="error" color="warn" disabled>
+                      <strong>{{redError}}</strong>
+                  </mat-chip>
+                </mat-chip-list>
+                </div>
+                <div *ngIf="success; else br">
+                <mat-chip-list color="warn" disabled>
+                  <mat-chip class="error" color="warn" disabled>
+                      <strong>{{success}}</strong>
+                  </mat-chip>
+                </mat-chip-list>
+                </div>
+              </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    </div>
+  </mat-grid-tile>
+</mat-grid-list>
+
+  <ng-template #blank></ng-template>
+
+  <ng-template #disabled>
+  <!--
+  <mat-form-field class="full-width">
+    <font color="gray">User Name (Disabled for Google Login)</font>
+    <input matInput disabled id="userinput" placehoder="User Name" type="text" [(ngModel)]="username" [ngModelOptions]="{standalone: true}">
+  </mat-form-field>
+  <br>
+  <mat-form-field class="full-width">
+    <font color="gray">Password (Disabled for Google Login)</font>
+    <input matInput disabled id="passinput" placehoder="Password" type="password" required [(ngModel)]="password" [ngModelOptions]="{standalone: true}">
+  </mat-form-field>
+  -->
+  <div class="center">
+    <img title="Google Plus Sign In" src="../../assets/img/googleplus.png" width="125" height="125">
+  </div>
+</ng-template>
+
+  <ng-template #notLoggedIn>
+    <div class="container" >
+        <mat-card class="card-container">
+          <mat-card-header mat-colors="accent">
+            <div mat-card-avatar class="card-header-image"></div>
+            <mat-card-title>
+              <strong class="card-header-title">Not Authenticated</strong>
+            </mat-card-title>
+            <mat-card-subtitle>
+              <small> Powered by Amazon Cognito and Amazon API Gateway</small>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <hr>
+          <mat-card-content>
+            <br>
+            <br>
+            <br>
+            <div class="card-content">
+              <mat-chip-list>
+                <mat-chip>Chose your Provider on the Left and Sign In to retrieve information about the User</mat-chip>
+              </mat-chip-list>
+            </div>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  </ng-template>
+
+  <ng-template #googleUserData>
+    <div>
+      <mat-chip-list>
+       <mat-chip>
+        <br>
+        <br>
+        <strong>{{googleUser.name}} {{googleUser.surname}}</strong><br>
+        <small><strong>Email: </strong></small><span>{{googleUser.email}}</span><br>
+        <small><strong>Id: </strong></small><span><small><font color="blue">{{googleUser.userId}}</font></small></span><br>
+        <br>
+        <br>
+        <br>
+        </mat-chip>
+      </mat-chip-list>
+    </div>
+
+  </ng-template>
+
+  <ng-template #disableTests>
+    <div class="center">
+          <button mat-fab disabled type="submit">/google</button><br><br>
+          <button mat-fab disabled type="submit">/cup</button><br><br>
+          <button mat-fab disabled type="submit">/cip</button>
+        </div>
+  </ng-template>
+
+  <ng-template #grayCircle>
+    <figure class="circle"></figure>
+  </ng-template>
+
+  <ng-template #br>
+  </ng-template>
