@@ -1,4 +1,5 @@
-#AngularV6
+# AngularV6
+
 This project is a modified version of [AWS-Cognito-API](https://github.com/aws-samples/aws-cognito-apigw-angular-auth). The project primarily uses Angular6 and Angular6 CLI. 
 
 # AwsCognitoApigwAngular
